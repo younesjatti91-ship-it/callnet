@@ -537,5 +537,42 @@ export class CarrierApiClient {
   </div>
 </body>
 </html>`;
+  static async fetchCarrierLiveCities(carrierCode: string, credentials?: any): Promise<string[]> {
+    try {
+      if (carrierCode === 'irsaliyat') {
+        const res = await axios.get('https://irsaliyat.ma/v1.0/cities', { timeout: 4000 });
+        if (Array.isArray(res.data)) {
+          return res.data
+            .map((c: any) => (typeof c === 'string' ? c : c.name || c.city || ''))
+            .map((c: string) => c.trim())
+            .filter(Boolean);
+        }
+      } else if (carrierCode === 'ozon_express') {
+        const res = await axios.get('https://api.ozonexpress.ma/cities', { timeout: 4000 });
+        if (res.data?.CITIES && typeof res.data.CITIES === 'object') {
+          return Object.values(res.data.CITIES)
+            .map((c: any) => (c.NAME || c.name || '').trim())
+            .filter(Boolean);
+        }
+      } else if (carrierCode === 'onessta') {
+        const headers: Record<string, string> = {};
+        if (credentials?.apiKey) headers['Authorization'] = `Bearer ${credentials.apiKey}`;
+        const res = await axios.get('https://api.onessta.com/api/v1/c/cities', { headers, timeout: 4000 });
+        if (Array.isArray(res.data?.data)) {
+          return res.data.data.map((c: any) => (c.name || c.city || '').trim()).filter(Boolean);
+        }
+      } else if (carrierCode === 'forcelog') {
+        const headers: Record<string, string> = {};
+        if (credentials?.apiKey) headers['Authorization'] = `Bearer ${credentials.apiKey}`;
+        const res = await axios.get('https://api.forcelog.ma/customer/Cities', { headers, timeout: 4000 });
+        if (Array.isArray(res.data)) {
+          return res.data.map((c: any) => (c.name || c.cityName || '').trim()).filter(Boolean);
+        }
+      }
+    } catch (err: any) {
+      logger.warn(`Could not pull live cities from ${carrierCode} API: ${err.message}`);
+    }
+    return [];
   }
 }
+
