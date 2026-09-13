@@ -1,0 +1,490 @@
+{
+  "info": {
+    "_postman_id": "codflow-api-collection-v1",
+    "name": "COD Flow Platform API",
+    "description": "Comprehensive Postman Collection for COD Flow - Multi-Tenant Operations Platform for COD E-Commerce Sellers.\n\nPre-configured with dynamic environment variables: {{baseUrl}}, {{token}}, {{storeId}}, and {{orderId}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "storeId", "value": "7e9e5b7c-9905-4e65-9d5b-2484eafc3295", "type": "string" },
+    { "key": "orderId", "value": "ORD-1001", "type": "string" },
+    { "key": "discrepancyId", "value": "disc-1", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01. Health & Status",
+      "item": [
+        {
+          "name": "Check Health",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Root Status Page (JSON)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "http://localhost:4000/", "protocol": "http", "host": ["localhost"], "port": "4000", "path": [""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Authentication & Profile",
+      "item": [
+        {
+          "name": "Login - Seller (Auto-saves {{token}})",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "    if (jsonData.data.stores && jsonData.data.stores.length > 0) {",
+                  "        pm.collectionVariables.set('storeId', jsonData.data.stores[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@codflow.io\",\n  \"password\": \"SellerPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@codflow.io\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Call Center Agent",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@codflow.io\",\n  \"password\": \"AgentPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Sellers & Stores",
+      "item": [
+        {
+          "name": "List Seller Stores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sellers", "host": ["{{baseUrl}}"], "path": ["sellers"] }
+          }
+        },
+        {
+          "name": "Get Store By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sellers/stores/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["sellers", "stores", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Get Store Assigned Agents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sellers/stores/{{storeId}}/agents", "host": ["{{baseUrl}}"], "path": ["sellers", "stores", "{{storeId}}", "agents"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Orders Management",
+      "item": [
+        {
+          "name": "List Store Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{storeId}}?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{storeId}}"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "pending_verification", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Manual COD Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderNumber\": \"MANUAL-1099\",\n  \"customerName\": \"Amina Alami\",\n  \"customerPhone\": \"+212661998877\",\n  \"city\": \"Casablanca\",\n  \"shippingAddress\": \"Boulevard d'Anfa, Imm 4, Apt 12\",\n  \"subtotal\": 450,\n  \"shippingFee\": 35,\n  \"codAmount\": 485,\n  \"currency\": \"MAD\",\n  \"source\": \"manual\",\n  \"items\": [\n    {\n      \"productName\": \"Wireless ANC Headphones\",\n      \"sku\": \"AUDIO-ANC-01\",\n      \"quantity\": 1,\n      \"unitPrice\": 450,\n      \"totalPrice\": 450\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Update Order Status (With Audit Trail)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"reason\": \"Customer confirmed order over phone call\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{storeId}}/{{orderId}}/status", "host": ["{{baseUrl}}"], "path": ["orders", "{{storeId}}", "{{orderId}}", "status"] }
+          }
+        },
+        {
+          "name": "Schedule Customer Callback",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledCallbackAt\": \"2026-09-15T15:00:00.000Z\",\n  \"notes\": \"Customer asked to call back after 3 PM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{storeId}}/{{orderId}}/schedule-callback", "host": ["{{baseUrl}}"], "path": ["orders", "{{storeId}}", "{{orderId}}", "schedule-callback"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Storefront Webhook Ingestion",
+      "item": [
+        {
+          "name": "Shopify Webhook Ingestion",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-shopify-hmac-sha256", "value": "test-hmac-signature" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 99182371,\n  \"name\": \"#1042\",\n  \"total_price\": \"620.00\",\n  \"currency\": \"MAD\",\n  \"shipping_address\": {\n    \"name\": \"Youssef Benani\",\n    \"phone\": \"+212612345678\",\n    \"address1\": \"Avenue Hassan II, Appt 5\",\n    \"city\": \"Rabat\",\n    \"province\": \"Rabat-Sale-Kenitra\"\n  },\n  \"line_items\": [\n    {\n      \"title\": \"Smart Fitness Watch\",\n      \"sku\": \"WATCH-FIT-PRO\",\n      \"quantity\": 1,\n      \"price\": \"620.00\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/webhooks/shopify/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["webhooks", "shopify", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "YouCan Webhook Ingestion",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"yc_ord_88291\",\n  \"order_number\": \"YC-88291\",\n  \"customer\": {\n    \"first_name\": \"Khadija\",\n    \"last_name\": \"Mansour\",\n    \"phone\": \"+212622446688\",\n    \"city\": \"Tangier\",\n    \"address\": \"Place de France\"\n  },\n  \"subtotal\": 320,\n  \"shipping\": 35,\n  \"total\": 355,\n  \"currency\": \"MAD\",\n  \"variants\": [\n    {\n      \"product_title\": \"Organic Argan Oil 100ml\",\n      \"quantity\": 1,\n      \"price\": 320\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/webhooks/youcan/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["webhooks", "youcan", "{{storeId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Call Center Queue & Calls",
+      "item": [
+        {
+          "name": "Get Pending Verification Queue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/call-center/queue/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["call-center", "queue", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Record Call Attempt (no_answer triggers WAHA WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"outcome\": \"no_answer\",\n  \"durationSeconds\": 25,\n  \"notes\": \"No answer after 5 rings. Triggered automated WhatsApp message.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/call-center/calls/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["call-center", "calls", "{{storeId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Couriers & Logistics",
+      "item": [
+        {
+          "name": "List Connected Courier Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/couriers/accounts/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["couriers", "accounts", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Dispatch Order & Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"courierCode\": \"ozon\",\n  \"serviceLevel\": \"standard\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/couriers/shipments/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["couriers", "shipments", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Ozon Courier Webhook Normalization",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tracking_code\": \"OZ-MA-99201\",\n  \"status\": \"DELIVERED\",\n  \"delivered_at\": \"2026-09-12T16:30:00Z\",\n  \"cash_collected\": 485,\n  \"city\": \"Casablanca\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/couriers/webhook/ozon", "host": ["{{baseUrl}}"], "path": ["couriers", "webhook", "ozon"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. WhatsApp Multi-Session Automation (WAHA)",
+      "item": [
+        {
+          "name": "Check WAHA Docker Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/whatsapp/health", "host": ["{{baseUrl}}"], "path": ["whatsapp", "health"] }
+          }
+        },
+        {
+          "name": "List Store WhatsApp Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/whatsapp/sessions/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["whatsapp", "sessions", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Create / Register WhatsApp Line",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+212611223344\",\n  \"label\": \"Agent Line 02 (Confirmation)\",\n  \"engine\": \"NOWEB\",\n  \"isDefault\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/whatsapp/sessions/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["whatsapp", "sessions", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Query WAHA Session Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/whatsapp/status/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["whatsapp", "status", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Send Direct WhatsApp Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"+212612345678\",\n  \"message\": \"Salam Karim, your COD order ORD-1001 is on its way with J&T Express! Tracking: JT99281730MA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/whatsapp/send/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["whatsapp", "send", "{{storeId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Financial Reconciliation",
+      "item": [
+        {
+          "name": "Upload Courier Remittance CSV",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "application/json": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courierName\": \"J&T Express\",\n  \"remittanceRows\": [\n    {\n      \"trackingNumber\": \"JT99281730MA\",\n      \"orderNumber\": \"ORD-1004\",\n      \"collectedAmount\": 720,\n      \"remittanceFee\": 30,\n      \"netAmount\": 690,\n      \"deliveryDate\": \"2026-09-12\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reconciliation/upload/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["reconciliation", "upload", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "List Remittance Discrepancies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/reconciliation/discrepancies/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["reconciliation", "discrepancies", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Resolve Discrepancy",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolution\": \"written_off\",\n  \"notes\": \"Underpayment confirmed with courier management\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reconciliation/discrepancies/{{storeId}}/{{discrepancyId}}/resolve", "host": ["{{baseUrl}}"], "path": ["reconciliation", "discrepancies", "{{storeId}}", "{{discrepancyId}}", "resolve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Analytics & KPIs",
+      "item": [
+        {
+          "name": "Get Aggregate Store Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/analytics/metrics/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["analytics", "metrics", "{{storeId}}"] }
+          }
+        },
+        {
+          "name": "Get Conversion Funnel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/analytics/funnel/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["analytics", "funnel", "{{storeId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Platform Admin & Staff",
+      "item": [
+        {
+          "name": "List Platform Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Register Staff Member (Agent / Manager / Moderator / Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hamza Radi\",\n  \"email\": \"hamza.agent@codflow.io\",\n  \"password\": \"AgentPass123!\",\n  \"role\": \"Agent\",\n  \"phoneNumber\": \"+212611223344\",\n  \"storeId\": \"{{storeId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Toggle Staff Status (Activate / Deactivate)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/users/{{userId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "users", "{{userId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Store & Agent Commissions",
+      "item": [
+        {
+          "name": "Configure Agent Commission Rates",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agentCommissionPerConfirmedOrder\": 5.0,\n  \"agentCommissionPerDeliveredOrder\": 15.0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sellers/stores/{{storeId}}/commissions", "host": ["{{baseUrl}}"], "path": ["sellers", "stores", "{{storeId}}", "commissions"] }
+          }
+        },
+        {
+          "name": "Get Agent Commission Payout Ledger",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sellers/stores/{{storeId}}/agent-commissions", "host": ["{{baseUrl}}"], "path": ["sellers", "stores", "{{storeId}}", "agent-commissions"] }
+          }
+        }
+      ]
+    }
+  ]
+}
